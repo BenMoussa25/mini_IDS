@@ -39,11 +39,19 @@ int load_rules(const char *filename) {
         strcpy(r->pattern_type, pattern_type);
         strcpy(r->pattern, pattern);
         if (r->dst_port == 0) r->dst_port = -1;
+        
+        // Set action type
+        if (strcmp(r->action, "drop") == 0) {
+            r->action_type = RULE_ACTION_DROP;
+        } else if (strcmp(r->action, "reject") == 0) {
+            r->action_type = RULE_ACTION_REJECT;
+        } else {
+            r->action_type = RULE_ACTION_ALERT;
+        }
 
         rule_count++;
     }
     fclose(f);
-    printf("[+] Loaded %u rules from %s\n", rule_count, filename);
     return 0;
 }
 
@@ -52,7 +60,10 @@ int ip_match(const char *rule_ip, const char *pkt_ip) {
 }
 
 int match_rule(const PacketInfo *pkt, const Rule *rule) {
-    if (strcmp(rule->action, "alert") != 0) return 0;
+    // Accept alert, drop, or reject actions
+    if (strcmp(rule->action, "alert") != 0 && 
+        strcmp(rule->action, "drop") != 0 && 
+        strcmp(rule->action, "reject") != 0) return 0;
     if (strcmp(rule->proto, "any") != 0 && strcasecmp(rule->proto, pkt->protocol == IPPROTO_TCP ? "tcp" :
             pkt->protocol == IPPROTO_UDP ? "udp" : "icmp") != 0) return 0;
 

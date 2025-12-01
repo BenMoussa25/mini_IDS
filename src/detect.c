@@ -1,6 +1,7 @@
 #include "detect.h"
 #include "rules.h"
 #include "utils.h"
+#include "ips.h"
 
 // TCP flags
 #define TH_FIN  0x01
@@ -17,6 +18,15 @@ void detect_attacks(const PacketInfo *pkt) {
                       rules[i].msg, pkt->src_ip, pkt->src_port,
                       pkt->dst_ip, pkt->dst_port, 
                       pkt->protocol == IPPROTO_TCP ? "TCP" : pkt->protocol == IPPROTO_UDP ? "UDP" : "ICMP");
+            
+            // Take IPS action if in IPS mode
+            if (get_ips_mode() == IPS_MODE_IPS) {
+                if (rules[i].action_type == RULE_ACTION_DROP) {
+                    drop_packet(pkt);
+                } else if (rules[i].action_type == RULE_ACTION_REJECT) {
+                    reject_packet(pkt);
+                }
+            }
         }
     }
 
