@@ -6,8 +6,14 @@
 #define MAX_RULES 100
 #define MAX_PATTERN 256
 
+typedef enum {
+    RULE_ACTION_ALERT,
+    RULE_ACTION_DROP,
+    RULE_ACTION_REJECT
+} rule_action_t;
+
 typedef struct {
-    char action[8];        // alert
+    char action[8];        // alert, drop, reject
     char proto[8];         // tcp, udp, icmp, any
     char src_ip[32];       // any or IP
     char dst_ip[32];
@@ -15,6 +21,7 @@ typedef struct {
     char pattern_type[16]; // FLAG, PAYLOAD, SIZE
     char pattern[MAX_PATTERN];
     char msg[256];
+    rule_action_t action_type;
 } Rule;
 
 extern Rule rules[MAX_RULES];
